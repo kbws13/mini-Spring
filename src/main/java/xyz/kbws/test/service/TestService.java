@@ -1,6 +1,8 @@
 package xyz.kbws.test.service;
 
+import xyz.kbws.annotation.Autowired;
 import xyz.kbws.annotation.Service;
+import xyz.kbws.test.dao.TestDAO;
 
 /**
  * @Author kbws
@@ -9,4 +11,10 @@ import xyz.kbws.annotation.Service;
  */
 @Service
 public class TestService {
+    @Autowired
+    TestDAO testDAO;
+
+    public void echo(){
+        System.out.println(testDAO.echo());
+    }
 }

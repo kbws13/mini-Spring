@@ -60,7 +60,7 @@ public abstract class AbstractApplicationContext extends DefaultListableBeanFact
     private void doAutowired(){
         for (Map.Entry<String, BeanDefinition> beanDefinitionEntry : super.beanDefinitionMap.entrySet()){
             String beanName = beanDefinitionEntry.getKey();
-            if (beanDefinitionEntry.getValue().isLazyInit()){
+            if (!beanDefinitionEntry.getValue().isLazyInit()){
                 getBean(beanName);
             }
         }
@@ -77,9 +77,11 @@ public abstract class AbstractApplicationContext extends DefaultListableBeanFact
            }
            // 将实例化后的bean使用BeanWrapper包装
             BeanWrapper beanWrapper = new BeanWrapper(instance);
-           this.factoryBeanInstanceCache.putIfAbsent(beanDefinition.getBeanClassName(), beanWrapper);
+           this.factoryBeanInstanceCache.put(beanDefinition.getBeanClassName(), beanWrapper);
            // 开始注入操作
            populateBean(instance);
+
+           return instance;
        }catch (Exception e){
            e.printStackTrace();
        }
@@ -92,10 +94,11 @@ public abstract class AbstractApplicationContext extends DefaultListableBeanFact
     private Object instantiateBean(BeanDefinition beanDefinition){
         Object instance = null;
         String className = beanDefinition.getBeanClassName();
+        String factoryBeanName = beanDefinition.getFactoryBeanName();
         try {
             // 先判断单例池中是否存在该类的实例
-            if (this.factoryBeanInstanceCache.containsKey(className)){
-                instance = this.factoryBeanObjectCache.get(className);
+            if (this.factoryBeanObjectCache.containsKey(factoryBeanName)){
+                instance = this.factoryBeanObjectCache.get(factoryBeanName);
             }else {
                 Class<?> clazz = Class.forName(className);
                 instance = clazz.newInstance();
@@ -127,9 +130,7 @@ public abstract class AbstractApplicationContext extends DefaultListableBeanFact
             }
 
             String autowiredBeanName = field.getType().getName();
-
             field.setAccessible(true);
-
             try {
                 field.set(instance, this.factoryBeanInstanceCache.get(autowiredBeanName).getWrapperInstance());
             }catch (IllegalAccessException e){
