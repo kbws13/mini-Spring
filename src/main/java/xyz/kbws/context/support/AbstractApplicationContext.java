@@ -1,11 +1,13 @@
 package xyz.kbws.context.support;
 
+import xyz.kbws.annotation.*;
 import xyz.kbws.beans.BeanWrapper;
 import xyz.kbws.beans.factory.config.BeanDefinition;
 import xyz.kbws.beans.factory.config.BeanDefinitionReader;
 import xyz.kbws.beans.factory.support.DefaultListableBeanFactory;
 import xyz.kbws.context.ApplicationContext;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +68,73 @@ public abstract class AbstractApplicationContext extends DefaultListableBeanFact
 
     @Override
     public Object getBean(String beanName) {
-        return null;
+       BeanDefinition beanDefinition = super.beanDefinitionMap.get(beanName);
+       try {
+           // 通过beanDefinition实例化bean
+           Object instance = instantiateBean(beanDefinition);
+           if (instance == null){
+               return null;
+           }
+           // 将实例化后的bean使用BeanWrapper包装
+            BeanWrapper beanWrapper = new BeanWrapper(instance);
+           this.factoryBeanInstanceCache.putIfAbsent(beanDefinition.getBeanClassName(), beanWrapper);
+           // 开始注入操作
+           populateBean(instance);
+       }catch (Exception e){
+           e.printStackTrace();
+       }
+       return null;
+    }
+
+    /**
+     * 通过beanDefinition实例化bean
+     */
+    private Object instantiateBean(BeanDefinition beanDefinition){
+        Object instance = null;
+        String className = beanDefinition.getBeanClassName();
+        try {
+            // 先判断单例池中是否存在该类的实例
+            if (this.factoryBeanInstanceCache.containsKey(className)){
+                instance = this.factoryBeanObjectCache.get(className);
+            }else {
+                Class<?> clazz = Class.forName(className);
+                instance = clazz.newInstance();
+                this.factoryBeanObjectCache.put(beanDefinition.getFactoryBeanName(), instance);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return instance;
+    }
+
+    /**
+     * 开始注入操作
+     */
+    public void populateBean(Object instance){
+        Class clazz = instance.getClass();
+        // 判断是否有Controller、Service、Component、Repository等注解标记
+        if (!(clazz.isAnnotationPresent(Component.class) ||
+                clazz.isAnnotationPresent(Controller.class) ||
+                clazz.isAnnotationPresent(Service.class) ||
+                clazz.isAnnotationPresent(Repository.class))){
+            return;
+        }
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields){
+            // 如果没有属性被Autowired标记，则跳过
+            if (!field.isAnnotationPresent(Autowired.class)){
+                continue;
+            }
+
+            String autowiredBeanName = field.getType().getName();
+
+            field.setAccessible(true);
+
+            try {
+                field.set(instance, this.factoryBeanInstanceCache.get(autowiredBeanName).getWrapperInstance());
+            }catch (IllegalAccessException e){
+                e.printStackTrace();
+            }
+        }
     }
 }
