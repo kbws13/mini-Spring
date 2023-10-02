@@ -1,6 +1,6 @@
 package xyz.kbws.context.annotation;
 
-import xyz.kbws.annotation.ComponentScan;
+import xyz.kbws.annotation.core.ComponentScan;
 import xyz.kbws.beans.factory.config.BeanDefinitionReader;
 import xyz.kbws.context.support.AbstractApplicationContext;
 

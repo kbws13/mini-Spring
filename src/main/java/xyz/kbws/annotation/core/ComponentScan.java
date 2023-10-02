@@ -1,16 +1,15 @@
-package xyz.kbws.annotation;
+package xyz.kbws.annotation.core;
 
 import java.lang.annotation.*;
 
 /**
  * @Author kbws
  * @Date 2023/9/28
- * @Description: 服务模式注解
+ * @Description: 配置需要扫描的包
  */
-@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
 @Documented
-@Component
-public @interface Service {
+public @interface ComponentScan {
     String value() default "";
 }

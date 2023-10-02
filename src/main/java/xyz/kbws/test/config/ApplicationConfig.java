@@ -1,6 +1,6 @@
 package xyz.kbws.test.config;
 
-import xyz.kbws.annotation.ComponentScan;
+import xyz.kbws.annotation.core.ComponentScan;
 
 /**
  * @Author kbws

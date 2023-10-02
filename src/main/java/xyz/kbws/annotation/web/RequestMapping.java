@@ -1,15 +1,15 @@
-package xyz.kbws.annotation;
+package xyz.kbws.annotation.web;
 
 import java.lang.annotation.*;
 
 /**
  * @Author kbws
  * @Date 2023/9/30
- * @Description: 参数注解
+ * @Description: URL映射注解
  */
-@Target({ElementType.PARAMETER})
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RequestParam {
+public @interface RequestMapping {
     String value() default "";
 }

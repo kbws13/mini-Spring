@@ -1,4 +1,4 @@
-package xyz.kbws.annotation;
+package xyz.kbws.annotation.beans;
 
 import java.lang.annotation.*;
 

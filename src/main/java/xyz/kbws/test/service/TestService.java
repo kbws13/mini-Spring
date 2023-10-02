@@ -1,7 +1,7 @@
 package xyz.kbws.test.service;
 
-import xyz.kbws.annotation.Autowired;
-import xyz.kbws.annotation.Service;
+import xyz.kbws.annotation.beans.Autowired;
+import xyz.kbws.annotation.core.Service;
 import xyz.kbws.test.dao.TestDAO;
 
 /**
@@ -10,10 +10,11 @@ import xyz.kbws.test.dao.TestDAO;
  * @Description:
  */
 @Service
-public class TestService {
+public class TestService implements IService {
     @Autowired
     TestDAO testDAO;
 
+    @Override
     public void echo(){
         System.out.println(testDAO.echo());
     }

@@ -1,6 +1,12 @@
 package xyz.kbws.context.support;
 
-import xyz.kbws.annotation.*;
+import xyz.kbws.annotation.beans.Autowired;
+import xyz.kbws.annotation.core.Component;
+import xyz.kbws.annotation.core.Controller;
+import xyz.kbws.annotation.core.Repository;
+import xyz.kbws.annotation.core.Service;
+import xyz.kbws.aop.support.AdvisedSupport;
+import xyz.kbws.aop.util.AopUtils;
 import xyz.kbws.beans.BeanWrapper;
 import xyz.kbws.beans.factory.config.BeanDefinition;
 import xyz.kbws.beans.factory.config.BeanDefinitionReader;
@@ -38,6 +44,8 @@ public abstract class AbstractApplicationContext extends DefaultListableBeanFact
         List<BeanDefinition> beanDefinitions = reader.loadBeanDefinitions();
         // 注册，将beanDefinition放入IOC容器中存储
         doRegisterBeanDefinition(beanDefinitions);
+        // 初始化AOP配置类
+        AopUtils.instantiationAopConfig(beanDefinitions);
         // 将非懒加载的类初始化
         doAutowired();
     }
@@ -94,14 +102,24 @@ public abstract class AbstractApplicationContext extends DefaultListableBeanFact
     private Object instantiateBean(BeanDefinition beanDefinition){
         Object instance = null;
         String className = beanDefinition.getBeanClassName();
-        String factoryBeanName = beanDefinition.getFactoryBeanName();
         try {
             // 先判断单例池中是否存在该类的实例
-            if (this.factoryBeanObjectCache.containsKey(factoryBeanName)){
-                instance = this.factoryBeanObjectCache.get(factoryBeanName);
+            if (this.factoryBeanObjectCache.containsKey(className)){
+                instance = this.factoryBeanObjectCache.get(className);
             }else {
                 Class<?> clazz = Class.forName(className);
                 instance = clazz.newInstance();
+
+                // 接入AOP功能
+                for (AdvisedSupport aspect : AopUtils.CONFIGS){
+                    aspect.setTargetClass(clazz);
+                    aspect.setTarget(instance);
+
+                    if (aspect.pointCutMatch()){
+                        instance = AopUtils.createProxy(aspect).getProxy();
+                    }
+                }
+                this.factoryBeanObjectCache.put(className, instance);
                 this.factoryBeanObjectCache.put(beanDefinition.getFactoryBeanName(), instance);
             }
         }catch (Exception e){
@@ -113,7 +131,13 @@ public abstract class AbstractApplicationContext extends DefaultListableBeanFact
     /**
      * 开始注入操作
      */
-    public void populateBean(Object instance){
+    public void populateBean(Object instance) throws Exception{
+
+        // 判断是否是代理类
+        if (AopUtils.isAopProxy(instance)){
+            instance = AopUtils.getTarget(instance);
+        }
+
         Class clazz = instance.getClass();
         // 判断是否有Controller、Service、Component、Repository等注解标记
         if (!(clazz.isAnnotationPresent(Component.class) ||

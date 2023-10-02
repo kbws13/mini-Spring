@@ -1,6 +1,6 @@
 package xyz.kbws.test.dao;
 
-import xyz.kbws.annotation.Repository;
+import xyz.kbws.annotation.core.Repository;
 
 /**
  * @Author kbws
