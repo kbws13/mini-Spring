@@ -13,7 +13,7 @@ import java.util.Iterator;
  * @date 2024/6/10
  * @description:
  */
-public class ClassPathXmlResource implements Resource{
+public class ClassPathXmlResource implements Resource {
 
     Document document;
 

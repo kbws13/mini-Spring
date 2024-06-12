@@ -9,10 +9,10 @@ import xyz.kbws.core.Resource;
  * @description: 将读取到 XML 配置信息，转换成 BeanDefinition
  */
 public class XmlBeanDefinitionReader {
-    BeanFactory beanFactory;
+    SimpleBeanFactory simpleBeanFactory;
 
-    public XmlBeanDefinitionReader(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    public XmlBeanDefinitionReader(SimpleBeanFactory simpleBeanFactory) {
+        this.simpleBeanFactory = simpleBeanFactory;
     }
 
     public void loadBeanDefinitions(Resource resource) {
@@ -21,7 +21,7 @@ public class XmlBeanDefinitionReader {
             String beanId = element.attributeValue("id");
             String beanClassName = element.attributeValue("class");
             BeanDefinition beanDefinition = new BeanDefinition(beanId, beanClassName);
-            this.beanFactory.registerBeanDefinition(beanDefinition);
+            this.simpleBeanFactory.registerBeanDefinition(beanDefinition);
         }
     }
 }

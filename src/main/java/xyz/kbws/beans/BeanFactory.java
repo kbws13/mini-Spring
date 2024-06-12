@@ -9,5 +9,12 @@ public interface BeanFactory {
 
     Object getBean(String beanName) throws BeanException;
 
-    void registerBeanDefinition(BeanDefinition beanDefinition);
+    boolean containsBean(String name);
+
+    boolean isSingleton(String name);
+
+    boolean isPrototype(String name);
+
+    Class<?> getType(String name);
+
 }
